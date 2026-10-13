@@ -1,0 +1,23 @@
+<nav class="report-actions">
+  <a href="/reports">Back to reports</a>
+  <button type="button" class="checklist-save"{% if active %} disabled{% endif %}>Save checklist</button>
+  <span class="checklist-state" aria-live="polite"></span>
+  {% if completed %}
+    <form class="reviewed-action" method="post" action="/report/reviewed">
+      <input type="hidden" name="results_id" value="{{ results_id }}">
+      <button type="submit">Reviewed</button>
+    </form>
+  {% endif %}
+  {% if active %}
+    <form class="stop" method="post" action="/report/stop" onsubmit="return confirm('Stop this review?')">
+      <input type="hidden" name="results_id" value="{{ results_id }}">
+      <button type="submit">Stop review</button>
+    </form>
+    <button disabled title="Wait for the review to finish">Delete report</button>
+  {% else %}
+    <form class="delete" method="post" action="/report/delete" onsubmit="return confirm('Delete this report permanently?')">
+      <input type="hidden" name="results_id" value="{{ results_id }}">
+      <button type="submit">Delete report</button>
+    </form>
+  {% endif %}
+</nav>

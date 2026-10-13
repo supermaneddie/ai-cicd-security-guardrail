@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Generate GitLab CICD file</title>
+    <style>
+      body { font: 16px/1.55 system-ui, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1.25rem; color: #18202a; }
+      a { color: #175cd3; }
+      fieldset { border: 1px solid #d7dde5; border-radius: 6px; margin: 1rem 0; padding: 1rem; }
+      label { font-weight: 600; }
+      .condition { color: #52606d; font-family: ui-monospace, monospace; margin: .35rem 0 .75rem 1.6rem; }
+      textarea { box-sizing: border-box; display: block; font: 14px/1.5 ui-monospace, monospace; margin-top: .75rem; min-height: 13rem; padding: .65rem; resize: vertical; width: 100%; }
+      textarea:disabled { background: #f4f6f8; color: #667085; }
+      button { background: #175cd3; border: 0; border-radius: 5px; color: white; cursor: pointer; font-weight: 600; padding: .7rem 1rem; }
+      .error { background: #fee4e2; border-radius: 5px; color: #912018; padding: .65rem .8rem; }
+      .hint { color: #52606d; }
+    </style>
+  </head>
+  <body>
+    <nav><a href="/reports">Back to reports</a></nav>
+    <h1>Generate CICD File</h1>
+    <p class="hint">Generate <code>.gitlab-ci.yml</code> for GitLab's CICD.</p>
+    {% if error %}<p class="error" role="alert">{{ error }}</p>{% endif %}
+    <form method="post" action="/generate-cicd" target="_blank">
+      <fieldset>
+        <label><input id="listening-files" type="checkbox" name="listening_files" {% if listening_files %}checked{% endif %}> Listening files</label>
+        <p class="condition">if: $CI_PIPELINE_SOURCE != "merge_request_event"</p>
+        <label for="files">File patterns (one per line)</label>
+        <textarea id="files" name="files" spellcheck="false">{{ files }}</textarea>
+      </fieldset>
+      <fieldset>
+        <label><input type="checkbox" name="web_pipeline" {% if web_pipeline %}checked{% endif %}> New Pipeline (from web)</label>
+        <p class="condition">if: $CI_PIPELINE_SOURCE == "web"</p>
+      </fieldset>
+      <button type="submit">Generate gitlab-ci.yml</button>
+    </form>
+    <script>
+      const checkbox = document.getElementById('listening-files');
+      const files = document.getElementById('files');
+      function updateFiles() { files.disabled = !checkbox.checked; }
+      checkbox.addEventListener('change', updateFiles);
+      updateFiles();
+    </script>
+  </body>
+</html>

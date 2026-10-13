@@ -1,0 +1,11 @@
+<script>
+(() => {
+  const details = document.querySelector('details.file-list');
+  if (!details) return;
+  const key = 'codeqc:file-list:' + {{ results_id|tojson }};
+  const saved = sessionStorage.getItem(key);
+  if (saved !== null) details.open = saved === 'open';
+  details.addEventListener('toggle', () => sessionStorage.setItem(key, details.open ? 'open' : 'closed'));
+  window.codeqcSaveFileList = () => sessionStorage.setItem(key, details.open ? 'open' : 'closed');
+})();
+</script>

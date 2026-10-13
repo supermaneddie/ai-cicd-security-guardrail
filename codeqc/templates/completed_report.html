@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>AI CICD Security Guardrail report</title>
+    <style data-codeqc-report-layout>
+      body { font: 16px/1.55 system-ui, sans-serif; color: #18202a; max-width: 1100px; margin: 2rem auto; padding: 0 1.25rem; }
+      header { border-bottom: 1px solid #d7dde5; margin-bottom: 2rem; }
+      code, pre { background: #f4f6f8; border-radius: 5px; }
+      code { padding: .15rem .35rem; }
+      pre { padding: 1rem; overflow: auto; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #d7dde5; padding: .55rem; text-align: left; }
+      th { background: #f4f6f8; }
+      .meta { color: #52606d; font-size: .9rem; }
+      .report-actions {
+        position: sticky;
+        top: 0;
+        z-index: 10;
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+        flex-wrap: wrap;
+        margin: 1rem 0;
+        padding: .75rem 0;
+        border-top: 1px solid #d7dde5;
+        border-bottom: 1px solid #d7dde5;
+        background: #fff;
+      }
+      .report-actions form { display: flex; align-items: center; gap: .5rem; margin: 0; }
+      .report-actions a { white-space: nowrap; }
+      .checklist-save { background: #175cd3; color: white; border: 0; border-radius: 5px; padding: .6rem .9rem; cursor: pointer; }
+      .checklist-save:disabled { background: #98a2b3; cursor: not-allowed; }
+      .checklist-state { color: #52606d; font-size: .9rem; }
+      .reviewed-action button { background: #067647; color: white; border: 0; border-radius: 5px; padding: .6rem .9rem; cursor: pointer; }
+      .review-check-item > label { display: flex; align-items: flex-start; gap: .55rem; }
+      .review-check-item input { margin-top: .38rem; flex: 0 0 auto; }
+      .review-check-item.fixed .checklist-content { opacity: .65; text-decoration: line-through; }
+      .delete button { background: #b42318; color: white; border: 0; border-radius: 5px; padding: .6rem .9rem; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>AI CICD Security Guardrail report</h1>
+      <p class="meta">Result {{ results_id }} · model {{ model_name }} · type {{ review_type }} · {{ generated }}</p>
+    </header>
+    {{ actions|safe }}
+    <p><strong>Elapsed time:</strong> {{ elapsed }} · <strong>Finished time:</strong> {{ finished }}</p>
+    {{ files_html|safe }}
+    {% if user_prompt %}
+    <section class="user-prompt">
+      <h2>User prompt</h2>
+      <pre>{{ user_prompt }}</pre>
+    </section>
+    {% endif %}
+    {{ trace_html|safe }}
+    <main>
+      {{ body|safe }}
+    </main>
+    {{ file_list_script|safe }}
+    {{ checklist_script|safe }}
+  </body>
+</html>

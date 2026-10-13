@@ -1,0 +1,85 @@
+<script data-codeqc-checklist="2">
+(() => {
+  const resultsId = {{ results_id|tojson }};
+  const items = Array.from(document.querySelectorAll('main h3'));
+  if (!items.length) return;
+  items.forEach((item, index) => {
+    const content = document.createElement('span');
+    content.className = 'checklist-content';
+    while (item.firstChild) content.appendChild(item.firstChild);
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.dataset.checklistId = 'item-' + index;
+    input.setAttribute('aria-label', 'Mark review item as fixed');
+    const label = document.createElement('label');
+    label.append(input, content);
+    item.classList.add('review-check-item');
+    item.appendChild(label);
+    input.addEventListener('change', () => item.classList.toggle('fixed', input.checked));
+  });
+  const stateElements = document.querySelectorAll('.checklist-state');
+  const checklistInputs = Array.from(document.querySelectorAll('[data-checklist-id]'));
+  const reviewedForms = document.querySelectorAll('.reviewed-action');
+  const reviewedButtons = document.querySelectorAll('.reviewed-action button[type="submit"]');
+  let savedChecklist = null;
+  const showState = message => stateElements.forEach(element => element.textContent = message);
+  const selectedChecklist = () => checklistInputs
+    .filter(input => input.checked)
+    .map(input => input.dataset.checklistId)
+    .sort();
+  const checklistIsDirty = () => savedChecklist === null ||
+    selectedChecklist().join('\n') !== savedChecklist.join('\n');
+  const updateReviewedState = () => reviewedButtons.forEach(button => {
+    const disabled = checklistIsDirty();
+    button.disabled = disabled;
+    button.title = disabled ? 'Save checklist changes before marking this report reviewed' : '';
+  });
+  const apply = checked => {
+    const selected = new Set(checked || []);
+    checklistInputs.forEach(input => {
+      input.checked = selected.has(input.dataset.checklistId);
+      input.closest('.review-check-item').classList.toggle('fixed', input.checked);
+    });
+    savedChecklist = selectedChecklist();
+    updateReviewedState();
+  };
+  const load = async () => {
+    try {
+      const response = await fetch('/report/checklist?results_id=' + encodeURIComponent(resultsId), {cache: 'no-store'});
+      if (!response.ok) throw new Error('Could not load checklist');
+      apply((await response.json()).checklist);
+    } catch (error) { showState(error.message); }
+  };
+  const save = async () => {
+    const checked = selectedChecklist();
+    document.querySelectorAll('.checklist-save').forEach(button => button.disabled = true);
+    showState('Saving…');
+    try {
+      const response = await fetch('/report/checklist', {
+        method: 'POST', headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({results_id: resultsId, checked})
+      });
+      if (!response.ok) throw new Error('Could not save checklist');
+      savedChecklist = checked;
+      showState(checklistIsDirty() ? 'Unsaved changes' : 'Saved');
+    } catch (error) { showState(error.message); }
+    finally {
+      document.querySelectorAll('.checklist-save').forEach(button => button.disabled = false);
+      updateReviewedState();
+    }
+  };
+  checklistInputs.forEach(input => input.addEventListener('change', () => {
+    showState(checklistIsDirty() ? 'Unsaved changes' : '');
+    updateReviewedState();
+  }));
+  reviewedForms.forEach(form => form.addEventListener('submit', event => {
+    if (!checklistIsDirty()) return;
+    event.preventDefault();
+    showState('Save checklist changes before marking this report reviewed');
+    updateReviewedState();
+  }));
+  document.querySelectorAll('.checklist-save').forEach(button => button.addEventListener('click', save));
+  updateReviewedState();
+  load();
+})();
+</script>

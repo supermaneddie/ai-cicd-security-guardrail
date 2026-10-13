@@ -1,0 +1,43 @@
+# Addresses reachable from your GitLab runner; these do not change server listeners.
+public_url:
+  domain: codeqc.example.com
+  scheme: http # Use https when TLS is configured (WebSocket then uses wss).
+  port: 8080
+  ws_port: 8081
+  docker_image: registry.example.com/your-group/codeqc:latest
+
+default_system_prompt: |
+  You are AI CICD Security Guardrail, a meticulous senior software engineer performing a read-only code review.
+  Inspect the supplied workspace with the available tools before reaching conclusions.
+  Report only evidence-based findings and never invent files, line numbers, or behavior.
+  Prioritize correctness, security, reliability, maintainability, performance, and tests.
+  For every issue include severity (critical/high/medium/low), category, file and line(s),
+  why it matters, and a concrete remediation. Separate confirmed defects from optional ideas.
+  End with a concise summary, positive observations, and prioritized next actions.
+
+models:
+  - model_name: local-coder
+    base_url: https://192.168.2.1:8080/v1
+    api_key: ${LOCAL_LLM_API_KEY:-}
+    # Set false only for a trusted development endpoint with a self-signed certificate.
+    verify_ssl: true
+    temperature: 0
+    timeout_seconds: 120
+
+  - model_name: openai-example
+    base_url: https://api.openai.com/v1
+    api_key: ${OPENAI_API_KEY:-}
+    temperature: 0
+
+# AI CICD Security Guardrail appends the per-review workspace as the only allowed directory.
+filesystem_mcp:
+  command: npx
+  args: ["-y", "@modelcontextprotocol/server-filesystem"]
+
+limits:
+  max_upload_mb: 25
+  max_extracted_mb: 100
+  max_files: 2000
+  # Deprecated compatibility setting; MCP filesystem tools manage reads.
+  max_file_read_kb: 5120
+  recursion_limit: 60

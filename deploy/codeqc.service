@@ -1,0 +1,22 @@
+[Unit]
+Description=AI CICD Security Guardrail production services
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=eddieman
+WorkingDirectory=/mnt/projects/code-qc
+Environment=MAMBA_ROOT_PREFIX=/mnt/micromamba
+Environment=PATH=/mnt/micromamba/envs/codeqc/bin:/home/eddieman/.nvm/versions/node/v24.12.0/bin:/home/eddieman/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin
+LogsDirectory=codeqc
+ExecStart=/bin/bash -o pipefail -c '/usr/local/bin/micromamba run -n codeqc /mnt/projects/code-qc/scripts/start-all.sh 2>&1 | /usr/bin/tee -a "/var/log/codeqc/codeqc-$(date +%%F).log" | /usr/bin/systemd-cat --identifier=codeqc'
+StandardOutput=journal
+StandardError=journal
+Restart=on-failure
+RestartSec=5s
+TimeoutStopSec=30s
+KillMode=control-group
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,10 @@
+<details class="langgraph-trace"{% if element_id %} id="{{ element_id }}"{% endif %}>
+  <summary>LangGraph trace ({{ trace|length }})</summary>
+  <ol>
+    {% for item in trace if item is mapping %}
+      <li><code>{{ item.time|default('') }}</code> {{ item.message|default('') }}</li>
+    {% else %}
+      <li class="trace-empty">LangGraph has not started yet.</li>
+    {% endfor %}
+  </ol>
+</details>

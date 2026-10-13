@@ -1,0 +1,40 @@
+stages:
+  - code_quality
+
+variables:
+  CODE_QC_URL: __CODE_QC_URL__
+  CODE_QC_WS_URL: __CODE_QC_WS_URL__
+  TYPE: "all"
+  FILES: "changed_only"
+  RESULTS_ID: ""
+
+.monitor_files:
+  rules:
+    - changes: &MONITOR_FILES
+        - "**/*.py"
+        - "**/*.html"
+        - "**/*.htm"
+        - "**/*.sh"
+        - "static/js/*.js"
+
+code_qc:
+  stage: code_quality
+  tags:
+    - code-qc
+  image: __DOCKER_IMAGE__
+  script:
+    - curl --fail --silent --show-error "${CODE_QC_URL%/}/qc.sh" --output /tmp/codeqc-qc.sh
+    - bash /tmp/codeqc-qc.sh
+  rules:
+    - if: $CI_PIPELINE_SOURCE != "merge_request_event"
+      changes: *MONITOR_FILES
+      variables:
+        MONITOR_FILES: |
+          **/*.py
+          **/*.html
+          **/*.htm
+          **/*.sh
+          static/js/*.js
+      when: manual
+    - if: $CI_PIPELINE_SOURCE == "web"
+      when: manual

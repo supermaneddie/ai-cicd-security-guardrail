@@ -1,0 +1,12 @@
+{
+  "name": "codeqc-ws-monitor",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Monitor a AI CICD Security Guardrail report WebSocket until it disconnects",
+  "bin": {
+    "codeqc-ws-monitor": "index.js"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

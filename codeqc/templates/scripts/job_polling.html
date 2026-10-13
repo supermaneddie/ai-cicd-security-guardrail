@@ -1,0 +1,41 @@
+{% include 'scripts/file_list_state.html' %}<script>
+(() => {
+  const resultsId = {{ results_id|tojson }};
+  const initialStatus = {{ initial_status|tojson }};
+  if (!['queued', 'running'].includes(initialStatus)) return;
+  const poll = async () => {
+    try {
+      const response = await fetch('/report/status?results_id=' + encodeURIComponent(resultsId), {cache: 'no-store'});
+      if (!response.ok) throw new Error('Status request failed');
+      const job = await response.json();
+      if (job.status !== initialStatus) {
+        if (window.codeqcSaveFileList) window.codeqcSaveFileList();
+        location.reload(); return;
+      }
+      document.getElementById('job-progress').textContent = job.progress || '';
+      const started = job.started_at || job.created_at;
+      if (started) {
+        const end = job.finished_at ? new Date(job.finished_at) : new Date();
+        const seconds = Math.max(0, Math.floor((end - new Date(started)) / 1000));
+        const pad = value => String(value).padStart(2, '0');
+        document.getElementById('job-elapsed').textContent = pad(Math.floor(seconds / 3600)) + ':' + pad(Math.floor((seconds % 3600) / 60)) + ':' + pad(seconds % 60);
+      }
+      document.getElementById('job-finished').textContent = job.finished_at || '—';
+      const traceDetails = document.getElementById('trace-details');
+      if (traceDetails && Array.isArray(job.trace)) {
+        traceDetails.querySelector('summary').textContent = 'LangGraph trace (' + job.trace.length + ')';
+        const list = traceDetails.querySelector('ol'); list.replaceChildren();
+        for (const entry of job.trace) {
+          const item = document.createElement('li'); const timestamp = document.createElement('code');
+          timestamp.textContent = entry.time || ''; item.append(timestamp, ' ' + (entry.message || '')); list.appendChild(item);
+        }
+        if (!job.trace.length) { const item = document.createElement('li'); item.textContent = 'LangGraph has not started yet.'; list.appendChild(item); }
+      }
+      const exceptionSection = document.getElementById('exception-section');
+      if (job.exception) { document.getElementById('job-exception').textContent = job.exception; exceptionSection.hidden = false; }
+    } catch (_error) { /* A transient failure should not disturb the report view. */ }
+    window.setTimeout(poll, 2000);
+  };
+  window.setTimeout(poll, 2000);
+})();
+</script>

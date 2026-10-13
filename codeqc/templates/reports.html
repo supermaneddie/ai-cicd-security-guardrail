@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="refresh" content="10">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>AI CICD Security Guardrail reports</title>
+    <style>
+      body { font: 16px/1.55 system-ui, sans-serif; max-width: 1200px; margin: 2rem auto; padding: 0 1.25rem; color: #18202a; }
+      table { border-collapse: collapse; width: 100%; }
+      th, td { border: 1px solid #d7dde5; padding: .6rem; text-align: left; }
+      th { background: #f4f6f8; }
+      a { color: #175cd3; }
+      .status { display: inline-flex; align-items: center; gap: .35rem; padding: .15rem .5rem; border-radius: 1rem; background: #e8f0fe; }
+      .spinner { width: .7rem; height: .7rem; border: 2px solid #9db7e8; border-top-color: #175cd3; border-radius: 50%; animation: spin .8s linear infinite; }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      .completed { background: #dcfae6; }
+      .reviewed { background: #d1e9ff; }
+      .failed { background: #fee4e2; }
+      .stopped { background: #f2f4f7; }
+      .reviewed-action button { background: #067647; color: white; border: 0; border-radius: 5px; padding: .6rem .9rem; cursor: pointer; }
+      .empty { text-align: center; color: #52606d; }
+    </style>
+  </head>
+  <body>
+    <h1>AI CICD Security Guardrail reports</h1>
+    <p><a href="/generate-cicd">Generate CICD File</a></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Result ID</th>
+          <th>Status</th>
+          <th>Model</th>
+          <th>Review type</th>
+          <th>Elapsed Time</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for job in jobs %}
+          <tr>
+            <td><a href="/report?results_id={{ job.results_id|urlencode }}">{{ job.results_id }}</a></td>
+            <td><span class="status {{ job.status }}">{{ job.status_html|safe }}</span></td>
+            <td>{{ job.model_name }}</td>
+            <td>{{ job.review_type }}</td>
+            <td>{{ job.elapsed }}</td>
+            <td>{{ job.created_at }}</td>
+            <td>
+              {% if job.active %}
+                <form method="post" action="/report/stop" onsubmit="return confirm('Stop this review?')">
+                  <input type="hidden" name="results_id" value="{{ job.results_id }}">
+                  <button type="submit">Stop</button>
+                </form>
+              {% elif job.completed %}
+                <form class="reviewed-action" method="post" action="/report/reviewed">
+                  <input type="hidden" name="results_id" value="{{ job.results_id }}">
+                  <input type="hidden" name="next" value="/reports">
+                  <button type="submit">Reviewed</button>
+                </form>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr>
+            <td colspan="7" class="empty">No reports found.</td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>

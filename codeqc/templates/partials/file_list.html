@@ -1,0 +1,10 @@
+<details class="file-list"{% if files|length <= 10 %} open{% endif %}>
+  <summary>Files ({{ files|length }})</summary>
+  <ul>
+    {% for path in files %}
+      <li><code>{{ path }}</code></li>
+    {% else %}
+      <li>No files recorded.</li>
+    {% endfor %}
+  </ul>
+</details>

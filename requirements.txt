@@ -1,0 +1,12 @@
+Flask[async]>=3.0,<4
+gunicorn>=22,<24
+langchain-core>=0.3,<2
+langchain-mcp-adapters>=0.2,<1
+langchain-openai>=0.3,<2
+langgraph>=1.0,<2
+redis>=5,<8
+websockets>=14,<16
+rq>=2,<3
+PyYAML>=6.0,<7
+Markdown>=3.6,<4
+bleach>=6.1,<7
